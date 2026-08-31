@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinAI — Backtests</title>
+<meta name="description" content="Run LEAN backtests and inspect the results.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>FinAI</h1>
+  <p class="tagline">Algorithmic backtesting on the LEAN engine.</p>
+</header>
+
+<main>
+  <section class="panel" id="composer">
+    <h2>New backtest</h2>
+
+    <label for="algorithm">Algorithm</label>
+    <select id="algorithm"></select>
+    <p class="hint" id="algorithm-description"></p>
+
+    <div id="parameters"></div>
+
+    <button id="run" type="button">Run backtest</button>
+    <p class="error" id="compose-error" hidden></p>
+  </section>
+
+  <section class="panel" id="history">
+    <h2>Runs</h2>
+    <ol id="jobs" class="jobs"><li class="empty">No runs yet.</li></ol>
+  </section>
+
+  <section class="panel wide" id="detail" hidden>
+    <div class="detail-head">
+      <h2 id="detail-title">Result</h2>
+      <span class="badge" id="detail-status"></span>
+    </div>
+    <p class="hint" id="detail-meta"></p>
+    <p class="error" id="detail-error" hidden></p>
+
+    <figure id="equity-figure" hidden>
+      <figcaption>Strategy equity</figcaption>
+      <div id="equity"></div>
+    </figure>
+
+    <dl class="stats" id="stats"></dl>
+
+    <details id="log-wrap">
+      <summary>Engine log</summary>
+      <pre id="log"></pre>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <a href="https://kiarash.tech">&larr; kiarash.tech</a>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

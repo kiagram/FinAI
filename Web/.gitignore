@@ -1,0 +1,4 @@
+# Per-job directories written by the service. The root .gitignore's `Results/`
+# only catches this because macOS matches it case-insensitively; be explicit so
+# the rule also holds on a case-sensitive filesystem.
+results/

@@ -16,9 +16,12 @@ COPY . /FinAI
 
 # Launcher transitively references Engine, Research, Optimizer.Launcher and
 # DownloaderDataProvider, so this single build covers every capability except
-# the report generator. Building the .sln instead would drag in Tests/.
+# the report generator and the web front end. Building the .sln instead would
+# drag in Tests/. Web references no LEAN project — it drives the launcher as a
+# child process — so it builds in seconds on top of the other two.
 RUN dotnet build Launcher/QuantConnect.Lean.Launcher.csproj -c Release -v minimal \
  && dotnet build Report/QuantConnect.Report.csproj -c Release -v minimal \
+ && dotnet build Web/QuantConnect.FinAI.Web.csproj -c Release -v minimal \
  && dotnet nuget locals all --clear \
  && rm -rf /FinAI/*/obj
 

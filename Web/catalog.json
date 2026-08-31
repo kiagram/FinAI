@@ -1,0 +1,41 @@
+[
+  {
+    "id": "macd-trend",
+    "name": "MACD Trend",
+    "description": "Goes long SPY when the MACD signal deviates upward by more than 1% and liquidates when it turns down. Daily resolution over 2004-2015, so this one produces a real multi-year equity curve.",
+    "language": "Python",
+    "typeName": "MACDTrendAlgorithm",
+    "location": "Algorithm.Python/MACDTrendAlgorithm.py",
+    "parameters": []
+  },
+  {
+    "id": "ema-cross",
+    "name": "EMA Cross (parameterised)",
+    "description": "Fast/slow exponential moving average crossover on SPY. Both periods are tunable, which makes this the algorithm to use for exploring how a parameter change moves the statistics.",
+    "language": "Python",
+    "typeName": "ParameterizedAlgorithm",
+    "location": "Algorithm.Python/ParameterizedAlgorithm.py",
+    "parameters": [
+      { "name": "ema-fast", "label": "Fast EMA period", "default": 20, "min": 2, "max": 200, "step": 1 },
+      { "name": "ema-slow", "label": "Slow EMA period", "default": 100, "min": 5, "max": 400, "step": 1 }
+    ]
+  },
+  {
+    "id": "framework",
+    "name": "Framework Template",
+    "description": "The algorithm framework stack end to end: manual universe selection, an EMA cross alpha model, equal weighting and immediate execution.",
+    "language": "Python",
+    "typeName": "BasicTemplateFrameworkAlgorithm",
+    "location": "Algorithm.Python/BasicTemplateFrameworkAlgorithm.py",
+    "parameters": []
+  },
+  {
+    "id": "basic-template",
+    "name": "Basic Template",
+    "description": "Buys and holds SPY for a week of minute data. The smallest thing that exercises the whole engine, useful as a smoke test.",
+    "language": "Python",
+    "typeName": "BasicTemplateAlgorithm",
+    "location": "Algorithm.Python/BasicTemplateAlgorithm.py",
+    "parameters": []
+  }
+]

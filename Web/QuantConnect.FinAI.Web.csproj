@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    FinAI web front end for LEAN.
+
+    Deliberately references no LEAN project. Backtests run as a child
+    `QuantConnect.Lean.Launcher` process and results come back as JSON files on
+    disk, so this service needs neither the engine assemblies nor pythonnet.
+    That is also what makes the exit-134 teardown crash documented in SETUP.md
+    a non-issue here: success is decided by the summary file, not by the exit
+    code.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>QuantConnect.FinAI.Web</RootNamespace>
+    <AssemblyName>QuantConnect.FinAI.Web</AssemblyName>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Update="catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The Web SDK copies wwwroot on publish but not on build; the service runs
+         straight out of bin/Release both locally and in the container. -->
+    <Content Update="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

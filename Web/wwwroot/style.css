@@ -1,0 +1,100 @@
+/* Palette shared with kiarash.tech so the subdomain reads as part of the same site. */
+:root {
+  --bg: #fbfbfa; --fg: #1a1a18; --muted: #6b6b66;
+  --line: #e4e4e0; --accent: #b4531f; --card: #ffffff;
+  --ok: #2f7d4f; --bad: #b03030; --run: #9a6b12;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14140f; --fg: #ededea; --muted: #9a9a92;
+    --line: #2a2a24; --accent: #e08a4c; --card: #1b1b16;
+    --ok: #6fbf8c; --bad: #e07a7a; --run: #d9ab52;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  padding: 2rem 1.25rem 4rem;
+}
+
+header, main, footer { max-width: 68rem; margin: 0 auto; }
+
+h1 { font-size: clamp(1.9rem, 5vw, 2.4rem); margin: 0 0 .2rem; letter-spacing: -.02em; }
+h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 1rem; font-weight: 600; }
+.tagline { color: var(--muted); margin: 0 0 2rem; }
+
+main { display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+@media (max-width: 52rem) { main { grid-template-columns: 1fr; } }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+.panel.wide { grid-column: 1 / -1; }
+
+label { display: block; font-size: .85rem; color: var(--muted); margin: 0 0 .35rem; }
+
+select, input {
+  width: 100%; padding: .5rem .6rem; font: inherit; font-size: .95rem;
+  color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px;
+}
+select:focus-visible, input:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+
+.hint { color: var(--muted); font-size: .85rem; margin: .5rem 0 1rem; }
+
+.field { margin-bottom: .9rem; }
+.field .range { color: var(--muted); font-size: .75rem; }
+
+button {
+  width: 100%; padding: .6rem 1rem; font: inherit; font-weight: 600; cursor: pointer;
+  color: var(--bg); background: var(--accent);
+  border: 1px solid transparent; border-radius: 6px;
+}
+button:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: .55; cursor: progress; }
+
+.error { color: var(--bad); font-size: .875rem; margin: .75rem 0 0; }
+
+.jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; max-height: 26rem; overflow-y: auto; }
+.jobs .empty { color: var(--muted); font-size: .9rem; }
+.jobs button.job {
+  width: 100%; text-align: left; background: transparent; color: var(--fg); font-weight: 400;
+  border: 1px solid var(--line); border-radius: 6px; padding: .55rem .7rem;
+  display: flex; justify-content: space-between; gap: .75rem; align-items: baseline;
+}
+.jobs button.job:hover { border-color: var(--accent); filter: none; }
+.jobs button.job[aria-current="true"] { border-color: var(--accent); }
+.jobs .job-name { font-size: .92rem; }
+.jobs .job-when { color: var(--muted); font-size: .75rem; white-space: nowrap; }
+
+.detail-head { display: flex; align-items: center; gap: .75rem; margin-bottom: .25rem; }
+.detail-head h2 { margin: 0; }
+
+.badge { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: .15rem .5rem; border-radius: 999px; border: 1px solid currentColor; }
+.badge.Queued { color: var(--muted); }
+.badge.Running { color: var(--run); }
+.badge.Succeeded { color: var(--ok); }
+.badge.Failed { color: var(--bad); }
+
+figure { margin: 1.25rem 0; }
+figcaption { font-size: .85rem; color: var(--muted); margin-bottom: .4rem; }
+#equity svg { display: block; width: 100%; height: auto; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .75rem 1rem; margin: 1.25rem 0; }
+.stats div { border-top: 1px solid var(--line); padding-top: .4rem; min-width: 0; }
+.stats dt { color: var(--muted); font-size: .75rem; }
+.stats dd { margin: 0; font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
+pre {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: .75rem; margin-top: .6rem; max-height: 22rem; overflow: auto;
+  font-size: .78rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
+footer { margin-top: 2.5rem; }
+footer a { color: var(--accent); text-decoration: none; font-size: .9rem; }
+footer a:hover { text-decoration: underline; }

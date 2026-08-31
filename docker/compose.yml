@@ -1,5 +1,6 @@
 # FinAI — containerised LEAN. Run everything from this directory:
 #
+#   docker compose up web                  # the web app on http://127.0.0.1:8080
 #   docker compose run --rm backtest       # Python or C# backtest
 #   docker compose up research             # JupyterLab on http://127.0.0.1:8888
 #   docker compose run --rm optimize       # parameter sweep
@@ -21,6 +22,39 @@ x-base: &base
     dockerfile: docker/Dockerfile
 
 services:
+  # The FinAI web front end: a catalog of algorithms, a queue, and the results
+  # of each run. It shells out to the same launcher the `backtest` service runs,
+  # so both produce identical numbers from identical inputs.
+  #
+  # Algorithm.Python is mounted read-only and the catalog only ever names files
+  # inside it: the API takes an algorithm id, never a path, so no request can
+  # point the engine at code that is not already in the image.
+  web:
+    <<: *base
+    working_dir: /FinAI/Web/bin/Release
+    entrypoint: ["dotnet", "QuantConnect.FinAI.Web.dll"]
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      # Set FINAI_ACCESS_TOKEN before exposing this beyond localhost. Without it
+      # anyone who can reach the port can spend minutes of CPU per request.
+      FinAI__AccessToken: ${FINAI_ACCESS_TOKEN:-}
+      FinAI__MaxConcurrency: ${FINAI_MAX_CONCURRENCY:-2}
+    volumes:
+      - ../Data:/FinAI/Data:ro
+      - ../Algorithm.Python:/FinAI/Algorithm.Python:ro
+      - ./results/web:/FinAI/Web/results
+    ports:
+      # 127.0.0.1 by default; a real deployment puts a TLS terminator in front.
+      # FINAI_PORT moves the host side when 8080 is already taken.
+      - "${FINAI_BIND:-127.0.0.1}:${FINAI_PORT:-8080}:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   # Honours Launcher/config.json from the host, so `algorithm-language`,
   # `algorithm-type-name` and `algorithm-location` are edited in the usual place.
   # C# algorithms are compiled into the image, so switching to CSharp needs a
