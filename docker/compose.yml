@@ -1,0 +1,75 @@
+# FinAI — containerised LEAN. Run everything from this directory:
+#
+#   docker compose run --rm backtest       # Python or C# backtest
+#   docker compose up research             # JupyterLab on http://127.0.0.1:8888
+#   docker compose run --rm optimize       # parameter sweep
+#   docker compose run --rm report         # HTML tearsheet from the last backtest
+#
+# No QuantConnect account is involved: job-user-id/api-access-token stay empty
+# and every handler resolves to a local-disk implementation.
+name: finai
+
+# YAML cannot splice sequences, so each service repeats the volume list.
+x-base: &base
+  image: finai:latest
+  # A real PID 1 (tini). Without it the container wedges forever instead of
+  # exiting: LEAN's pythonnet teardown raises SIGABRT, and the kernel does not
+  # apply default signal actions to PID 1, so dotnet hangs in a futex wait.
+  init: true
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+
+services:
+  # Honours Launcher/config.json from the host, so `algorithm-language`,
+  # `algorithm-type-name` and `algorithm-location` are edited in the usual place.
+  # C# algorithms are compiled into the image, so switching to CSharp needs a
+  # `docker compose build` first.
+  backtest:
+    <<: *base
+    working_dir: /FinAI/Launcher/bin/Release
+    volumes:
+      - ../Data:/FinAI/Data:ro
+      - ../Algorithm.Python:/FinAI/Algorithm.Python:ro
+      - ./results:/FinAI/Results
+      - ../Launcher/config.json:/FinAI/Launcher/bin/Release/config.json:ro
+    command: ["--results-destination-folder", "/FinAI/Results"]
+
+  research:
+    <<: *base
+    working_dir: /FinAI/Notebooks
+    entrypoint: ["/usr/local/bin/research-entrypoint.sh"]
+    volumes:
+      - ../Data:/FinAI/Data:ro
+      - ../Algorithm.Python:/FinAI/Algorithm.Python:ro
+      - ./results:/FinAI/Results
+      - ./notebooks:/FinAI/Notebooks
+    ports:
+      # 127.0.0.1 only — the server runs without a token.
+      - "127.0.0.1:8888:8888"
+
+  optimize:
+    <<: *base
+    working_dir: /FinAI/Optimizer.Launcher/bin/Release
+    entrypoint: ["dotnet", "QuantConnect.Optimizer.Launcher.dll"]
+    volumes:
+      - ../Data:/FinAI/Data:ro
+      - ../Algorithm.Python:/FinAI/Algorithm.Python:ro
+      - ./results:/FinAI/Results
+      - ./optimizer.config.json:/FinAI/Optimizer.Launcher/bin/Release/config.json:ro
+
+  # Override --backtest-data-source-file to report on a different algorithm.
+  report:
+    <<: *base
+    working_dir: /FinAI/Report/bin/Release
+    entrypoint: ["dotnet", "QuantConnect.Report.dll"]
+    volumes:
+      - ../Data:/FinAI/Data:ro
+      - ./results:/FinAI/Results
+    command:
+      - "--backtest-data-source-file"
+      - "/FinAI/Results/BasicTemplateFrameworkAlgorithm.json"
+      - "--report-destination"
+      - "/FinAI/Results/report.html"
+      - "--strategy-name"
+      - "FinAI Strategy"

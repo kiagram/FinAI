@@ -1,0 +1,11 @@
+# Backtest/optimizer output and generated tearsheets.
+results/*
+!results/.gitkeep
+# Created inside the container by research-entrypoint.sh; the symlink target
+# only resolves inside the container.
+notebooks/start.py
+notebooks/config.json
+notebooks/.ipynb_checkpoints/
+# LocalObjectStore root created by QuantBook() in the research container.
+notebooks/storage/
+notebooks/log.txt

@@ -1,0 +1,20 @@
+{
+  "algorithm-type-name": "ParameterizedAlgorithm",
+  "algorithm-language": "Python",
+  "algorithm-location": "/FinAI/Algorithm.Python/ParameterizedAlgorithm.py",
+  "lean-binaries-location": "/FinAI/Launcher/bin/Release/QuantConnect.Lean.Launcher",
+  "data-folder": "/FinAI/Data/",
+  "results-destination-folder": "/FinAI/Results",
+  "optimizer-close-automatically": true,
+  "maximum-concurrent-backtests": 2,
+  "optimization-strategy": "QuantConnect.Optimizer.Strategies.GridSearchOptimizationStrategy",
+  "optimization-strategy-settings": {
+    "$type": "QuantConnect.Optimizer.Strategies.StepBaseOptimizationStrategySettings, QuantConnect.Optimizer",
+    "default-segment-amount": 4
+  },
+  "optimization-criterion": { "target": "Statistics.Sharpe Ratio", "extremum": "max" },
+  "parameters": [
+    { "name": "ema-fast", "min": 10, "max": 30, "step": 10 },
+    { "name": "ema-slow", "min": 50, "max": 100, "step": 50 }
+  ]
+}

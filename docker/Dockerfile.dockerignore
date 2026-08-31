@@ -1,0 +1,19 @@
+# Build context for docker/Dockerfile. Kept separate from the repo-root
+# .dockerignore, which serves upstream's binaries-only Dockerfile.
+.git
+.github
+.vs
+.vscode
+.venv
+**/bin
+**/obj
+# Bind-mounted at run time so data can change without a rebuild.
+Data
+# Keep docker/ out of the source COPY so editing compose.yml or the optimizer
+# config does not invalidate the expensive build layer. The entrypoint is
+# COPYed explicitly, so it is negated back in.
+docker/**
+!docker/research-entrypoint.sh
+# Not built in the container.
+Tests
+Documentation

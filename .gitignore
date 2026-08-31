@@ -51,6 +51,11 @@
 *Data/*
 *Docker/*
 */Docker/*
+# FinAI: the two patterns above are case-insensitively matched on macOS, so they
+# swallow our whole docker/ setup. Re-include it; docker/.gitignore then handles
+# the generated output inside it.
+!docker/
+!docker/**
 *Algorithm.Python/Lib/*
 */[Ee]xtensions/*
 !**/Libraries/*
@@ -280,4 +285,9 @@ Research/Notebooks
 
 #Docker result files
 Results/
+# FinAI: keep the mount point for docker/compose.yml in the repo; its contents
+# stay ignored via docker/.gitignore. The directory must be re-included before
+# the file, since git cannot re-include a file under an excluded directory.
+!docker/results/
+!docker/results/.gitkeep
 QuantConnect.Lean.sln.DotSettings
