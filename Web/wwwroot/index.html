@@ -15,6 +15,19 @@
 </header>
 
 <main>
+  <section class="panel wide" id="auth" hidden>
+    <h2>Access token</h2>
+    <p class="hint">Running a backtest spends real CPU, so the API is gated. The
+      page itself is public; paste the token to run anything. It is remembered
+      in this browser.</p>
+    <form id="auth-form" autocomplete="off">
+      <label for="token">Token</label>
+      <input id="token" type="password" autocomplete="current-password" spellcheck="false">
+      <button id="auth-submit" type="submit">Unlock</button>
+    </form>
+    <p class="error" id="auth-error" hidden></p>
+  </section>
+
   <section class="panel" id="composer">
     <h2>New backtest</h2>
 

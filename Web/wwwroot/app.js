@@ -20,6 +20,11 @@ const token = {
   clear: () => localStorage.removeItem('finai-token')
 };
 
+/** Thrown on 401 so callers can surface the token form instead of an error. */
+class AuthRequiredError extends Error {
+  constructor() { super('An access token is required.'); this.name = 'AuthRequiredError'; }
+}
+
 async function api(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (options.body) headers['Content-Type'] = 'application/json';
@@ -28,14 +33,11 @@ async function api(path, options = {}) {
 
   const response = await fetch(`/api${path}`, { ...options, headers });
 
+  // Deliberately not window.prompt(): it is unavailable in sandboxed contexts
+  // and blocked by some browsers, which left the page dead with no way in.
   if (response.status === 401) {
     token.clear();
-    const supplied = window.prompt('This FinAI instance requires an access token.');
-    if (supplied) {
-      token.set(supplied);
-      return api(path, options);
-    }
-    throw new Error('An access token is required.');
+    throw new AuthRequiredError();
   }
 
   if (!response.ok) {
@@ -45,6 +47,52 @@ async function api(path, options = {}) {
 
   return response.status === 204 ? null : response.json();
 }
+
+/* ---------- token form ---------- */
+
+function requireToken() {
+  clearTimeout(state.timer);
+  el('auth').hidden = false;
+  el('composer').hidden = true;
+  el('history').hidden = true;
+  el('detail').hidden = true;
+  el('token').focus();
+}
+
+function tokenAccepted() {
+  el('auth').hidden = true;
+  el('auth-error').hidden = true;
+  el('composer').hidden = false;
+  el('history').hidden = false;
+}
+
+el('auth-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const supplied = el('token').value.trim();
+  if (!supplied) return;
+
+  const button = el('auth-submit');
+  const error = el('auth-error');
+  button.disabled = true;
+  error.hidden = true;
+
+  token.set(supplied);
+  try {
+    // Any authenticated endpoint will do; this one is cheap.
+    await api('/algorithms');
+    el('token').value = '';
+    tokenAccepted();
+    await start();
+  } catch (failure) {
+    token.clear();
+    error.textContent = failure instanceof AuthRequiredError
+      ? 'That token was not accepted.'
+      : failure.message;
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+  }
+});
 
 /* ---------- composer ---------- */
 
@@ -121,6 +169,7 @@ async function submit() {
     state.selectedJob = job.id;
     await refresh();
   } catch (failure) {
+    if (failure instanceof AuthRequiredError) { requireToken(); return; }
     error.textContent = failure.message;
     error.hidden = false;
   } finally {
@@ -295,6 +344,7 @@ async function refresh() {
     const active = jobs.some((job) => job.status === 'Queued' || job.status === 'Running');
     schedule(active ? 1500 : 10000);
   } catch (failure) {
+    if (failure instanceof AuthRequiredError) { requireToken(); return; }
     const error = el('compose-error');
     error.textContent = failure.message;
     error.hidden = false;
@@ -309,8 +359,16 @@ function schedule(delay) {
 
 el('run').addEventListener('click', submit);
 
-loadAlgorithms().then(refresh).catch((failure) => {
-  const error = el('compose-error');
-  error.textContent = failure.message;
-  error.hidden = false;
-});
+async function start() {
+  try {
+    await loadAlgorithms();
+    await refresh();
+  } catch (failure) {
+    if (failure instanceof AuthRequiredError) { requireToken(); return; }
+    const error = el('compose-error');
+    error.textContent = failure.message;
+    error.hidden = false;
+  }
+}
+
+start();

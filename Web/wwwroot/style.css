@@ -95,6 +95,9 @@ pre {
   font-size: .78rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere;
 }
 
+#auth form { display: grid; gap: .5rem; max-width: 24rem; }
+#auth button { margin-top: .25rem; }
+
 footer { margin-top: 2.5rem; }
 footer a { color: var(--accent); text-decoration: none; font-size: .9rem; }
 footer a:hover { text-decoration: underline; }
