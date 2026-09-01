@@ -107,6 +107,12 @@ that has not been through the `env.sh` setup. Everything lives in `docker/`.
     cd docker
     docker compose build            # ~5 min; 4.8 GB image
 
+Every service below bind-mounts `Data/` and `Algorithm.Python/` from this
+checkout, so all of them depend on the Docker daemon being able to see it.
+Check that first — see [When the mounts arrive
+empty](#when-the-mounts-arrive-empty), because the failure does not look like a
+mount problem.
+
 | Capability | Command | Status |
 |---|---|---|
 | Web app | `docker compose up web` → http://127.0.0.1:8080 | works |
@@ -120,6 +126,43 @@ Verified against the bundled sample data: both backtests reproduce the host
 numbers exactly (3 orders, 1.655% net profit, Sharpe 8.472), the optimizer
 picks `ema-fast:20, ema-slow:100` at Sharpe 27.907, and `QuantBook()` returns
 real SPY bars for October 2013.
+
+### When the mounts arrive empty
+
+**Symptom.** `docker compose build` and `up` both succeed, the container starts
+and reports healthy, and then the engine behaves as though the repository were
+empty: no algorithms in the catalog, `Data/` missing, backtests failing for
+reasons that read like application bugs. The web app is loudest about it — it
+refuses to boot with *"No catalog entry ... resolved to a file"* — but every
+service is affected.
+
+**Cause.** A Docker daemon that runs inside a VM only sees the host paths that
+VM was configured to mount. Colima mounts what is listed in
+`~/.colima/default/colima.yaml`, and this checkout is not necessarily among
+them. When the path is missing Docker does not refuse the mount: it *creates*
+the directory inside the VM and bind-mounts that, so an empty directory is
+mounted over each one and nothing errors.
+
+**The tell.** Ask the VM what it can see, rather than asking the container:
+
+    docker context show                                  # which daemon is this?
+    colima ssh -- ls ~/FinAI                             # real tree, or bare mount points?
+
+If that lists only `Data`, `Algorithm.Python` and `docker` — the mount points
+themselves, with nothing inside — the VM cannot see the checkout. Running the
+same `ls` against a directory the VM *does* mount returns the real tree, which
+makes the contrast unambiguous.
+
+**Fixes.** Either add the checkout to `mounts:` in `~/.colima/default/colima.yaml`
+and `colima restart`, or run the services natively per the sections above.
+Note that `colima restart` stops every other container on that daemon, so it is
+not a free action if the machine is hosting anything else.
+
+Docker Desktop shares `/Users` by default and does not have this problem, but
+installing or launching it does not change which daemon the CLI talks to —
+`docker context show` decides that, not which app is running. Linux hosts mount
+the filesystem directly and are unaffected, which is why this only bites
+locally.
 
 ### What the container does and does not need
 
@@ -136,7 +179,9 @@ image is a Docker Hub pull, not an API call.
 
 - `Data/`, `Algorithm.Python/` and `Launcher/config.json` are bind-mounted, so
   editing an algorithm or switching `algorithm-type-name` needs no rebuild.
-  C# algorithms are compiled into the image, so changing those does.
+  C# algorithms are compiled into the image, so changing those does. This is
+  also what makes the whole stack sensitive to the VM's mount list — see
+  [When the mounts arrive empty](#when-the-mounts-arrive-empty).
 - Results land on the host in `docker/results/`; the web app keeps its per-job
   directories in `docker/results/web/`.
 - The `web` service binds to `127.0.0.1` unless `FINAI_BIND` says otherwise, and
